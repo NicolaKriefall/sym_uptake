@@ -349,7 +349,65 @@ ylab("Shannon Diversity")
 ##########################################################
 #########################################################
 
-#insert heatmap code here
+library(vegan)
+library(MCMC.OTU)
+setwd("/Users/daviessw/Desktop")
+dat <- read.csv(file="rawcountswithseq.csv", sep=",", header=TRUE, row.names=1)
+summary(dat)
+str(dat)
+colnames(dat)
+dat$type
+dat$B1=dat$sq1...B1+dat$sq11...B1+dat$sq12...B1+dat$sq13...B1+dat$sq16...B1+dat$sq17...B1+dat$sq18...B1+dat$sq20.B1+dat$sq23.B1+dat$sq25.B1+dat$sq29.B1+dat$sq37.B1+dat$sq44.B1
+dat$B2=dat$sq2...B2+dat$sq5...B2+dat$sq8...B2+dat$sq10...B2+dat$sq14...B2+dat$sq21.B2+dat$sq28.B2+dat$sq30.B2+dat$sq33.B2+dat$sq35.B2+dat$sq43.B2
+dat$B3=dat$sq3...B3+dat$sq4...B3+dat$sq6...B3+dat$sq7...B3+dat$sq9...B3+dat$sq19.B3+dat$sq22.B3+dat$sq31.B3+dat$sq32.B3+dat$sq36.B3
+dat$A4a=dat$sq24.A4+dat$sq26.A4a
+dat$A2=dat$sq34.A2    
+dat$A3=dat$sq15...A3+dat$sq27.A3+dat$sq38.A3+dat$sq39.A3 
+dat$A4.3=dat$sq40.A4.3+dat$sq41.A4.3+dat$sq42.A4.3 
+
+colnames(dat)
+
+head(dat)
+goods2=dat[,48:54]
+head(goods2)
+# creating a log-transfromed normalized dataset for PCA:
+nl=startedLog(data=goods2,count.columns=1:length(names(goods2)), logstart=1)
+
+trans=as.data.frame(t(nl))
+head(trans)
+names(trans)=c( "FAV1", "FAV2", "FAV3", "FAV4", "FAV5", "FAV6", "DIP1", "DIP2",  "DIP3", "DIP4", "DIP5", "DIP6", "hostsed1", "hostsed2", "hostsed3", "hostsed4", "hostsed5",  "hostsed6", "hostsed7", "hostsed8", "hostsed9", "hostsed10", "hostsed11", "hostsed12", "hostsed13", "hostsed14",  "hostsed15", "hostsed16", "hostsed17", "hostsed18", "hostsed19", "hostsed20",  "hostsed21", "hostsed22", "host1", "sed1", "sed2", "sed3", "sed4", "sed5", "sed6")
+
+library(pheatmap)
+pheatmap(as.matrix(trans),cluster_cols=F,scale="row", show_rownames = F)
+
+# Make annotation table for pheatmap
+ann = data.frame(cond = c("FAV", "FAV", "FAV", "FAV", "FAV", "FAV", "DIP", "DIP",  "DIP", "DIP", "DIP", "DIP", "hostsed", "hostsed", "hostsed", "hostsed", "hostsed",  "hostsed", "hostsed", "hostsed", "hostsed", "hostsed", "hostsed", "hostsed", "hostsed", "hostsed",  "hostsed", "hostsed", "hostsed", "hostsed", "hostsed", "hostsed",  "hostsed", "hostsed", "host", "sed", "sed", "sed", "sed", "sed", "sed"))
+rownames(ann) <- names(explc)
+
+# Set colors
+Var1        <- c("deepskyblue3",  "blue", "firebrick", "olivedrab3", "goldenrod2")
+names(Var1) <- c("FAV", "DIP", "hostsed", "host", "sed")
+anno_colors <- list(cond = Var1)
+
+pheatmap(as.matrix(trans),annotation_col=ann,annotation_colors=anno_colors,cex=1.2,border_color=NA,clustering_distance_cols="correlation", show_rownames=T)
+
+means=apply(trans,1,mean) # means of rows
+explc=trans-means # subtracting them
+head(explc)
+
+pheatmap(trans,annotation_col=ann,annotation_colors=anno_colors,cex=1.2,border_color="grey",show_rownames=T, cluster_cols=F, color = colorRampPalette(c("white", "coral2"))(25))
+
+head(nl)
+head(dat)
+check=subset(dat[,1:3])
+head(check)
+new=cbind(check, nl)
+head(new)
+
+new2=subset(new[c(13:34,36:41),])
+plot(B1~tank, data=new2)
+lm1=lm(B1~tank, data=new2)
+summary(lm1)
 
 #######################################################
 ##########################################################
