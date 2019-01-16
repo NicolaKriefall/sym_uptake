@@ -11,6 +11,6 @@ https://benjjneb.github.io/dada2/tutorial.html
 After our analysis was complete, the dada2 authors released an ITS-specific pipeline, found here for your benefit:
 https://benjjneb.github.io/dada2/ITS_workflow.html
 
-The output file from the dada2 analysis is provided in this repository, and further output files can be found in the Ali et al. paper supplements. The input files for the uptake plot & heat map are also provided in this repository. 
+The output file from the dada2 analysis is provided in this repository ('final_OutputDADA_AllOTUs_FocusYesOnly.csv'), and further output files can be found in the Ali et al. paper supplemental data. The input files for the uptake plot ('uptakedata.csv') & heat map ('rawcountswithseq.csv') are also provided in this repository. 
 
 Please contact Nicola Kriefall [thenicolakriefall(at)gmail.com] with any questions!
