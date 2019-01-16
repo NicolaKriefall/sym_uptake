@@ -379,9 +379,8 @@ library("ggplot2")
 library("ggtree")
 
 #read in tree data in Newick format 
-#this is the output from Phylogeny.fr if you use the one-click tool from that site, or it is #the same format from Geneious. I used Geneious in order to do a custom alignment (GTR+I). The #default Muscle alignment used by Phylogeny.fr was not the most effective after using
-#Jmodeltest to check the delta AIC values for the different alignment models.  
-
+#this is the Newick output from Phylogeny.fr if you use the one-click tool from that site
+                                
 treeb <- read.tree("treenewick_cladeB.txt")
 treea <- read.tree("~/Google Drive/Uptake Project/Tree/treenewick_cladeA.txt")
 
