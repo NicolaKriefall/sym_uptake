@@ -1,4 +1,5 @@
 #sym_uptake
+
 Scripts used in Ali et al. (in revision with Coral Reefs): "Recruit symbiosis establishment and Symbiodiniaceae composition influenced by adult corals and reef sediment"
 
 About the "Total script.R" file:
