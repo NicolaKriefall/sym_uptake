@@ -14,32 +14,24 @@ sff2fastq(a, "~/Research/fastq") #file name, outdirectory
 ###the readSFF and sff2fastq will have to be done individually for each file
 #######just make sure they're all going to the same outdir.
 
-
 #####################################
-#The following tutorial is from:
+#The following tutorial is modified from:
 #https://benjjneb.github.io/dada2/tutorial.html
-#with edits by Carly D. Kenkel & Alizah Ali & Nicola Kriefall
-#installing packages: execute just once when first using a script:
+#with edits by Carly D. Kenkel & Alizah Ali & Nicola Kriefall & Sarah Davies
 
-source("https://bioconductor.org/biocLite.R")
-biocLite("dada2")
-#OR
-#
-install.packages("~/Downloads/dada2-1.4", #to install from source, just indicate pkg download location
-                 repos = NULL,
-                 type = "source",
-                 dependencies = c("Depends", "Suggests","Imports"))
-
+# source("https://bioconductor.org/biocLite.R")
+# biocLite("dada2")
+# biocLite('vegan')
 #####################################
-
 library(dada2); #packageVersion("dada2"); citation("dada2")
 library(ShortRead); #packageVersion("ShortRead")
 library(ggplot2); #packageVersion("ggplot2")
 library(phyloseq); #packageVersion("phyloseq")
 
 #Set path to unzipped, renamed fastq files
-path <- "~/Desktop/uptake" # CHANGE ME to the directory containing the fastq files after unzipping.
+path <- "~/Dropbox/BU/BU_Teaching/EcolEvolGenomics/Metabarcoding/Community_Data/Comm_Data" # CHANGE ME to the directory containing the fastq files after unzipping.
 fns <- list.files(path)
+#Let's make sure that all of our files are there
 fns
 
 ################################
@@ -48,23 +40,25 @@ fns
 
 fastqs <- fns[grepl(".fastq$", fns)]
 fastqs <- sort(fastqs) # Sort ensures reads are in same order
-fnFs <- fastqs[grepl("_R1", fastqs)] # Just the forward read files
+#fnFs <- fastqs[grepl("_R1", fastqs)] # Just the forward read files- these are old 454 data but most data are paired end
 
 # Get sample names, assuming files named as so: SAMPLENAME_XXX.fastq; OTHERWISE MODIFY
-sample.names <- sapply(strsplit(fnFs, "_"), `[`, 1) #the last number will select the field for renaming
+sample.names <- sapply(strsplit(fastqs, ".fastq"), `[`, 1) #the last number will select the field for renaming
+sample.names
 # Specify the full path to the fnFs
-fnFs <- file.path(path, fnFs)
-
+fnFs <- file.path(path, fastqs)
+fnFs
 
 #########Visualize Raw data
 
 #First, lets look at quality profile of R1 reads
-
-plotQualityProfile(fnFs[c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)])
-plotQualityProfile(fnFs[c(21,22,23,24,25,26,27,28,29)])
+plotQualityProfile(fnFs[c(1,2,3,4,5,6,7,8,9)])
+plotQualityProfile(fnFs[c(10,11,12,13,14,15,16,17,18)])
+plotQualityProfile(fnFs[c(19,20,21,22,23,24,25,26,27)])
+plotQualityProfile(fnFs[c(28,29,30,31,32,33,34,35)])
+plotQualityProfile(fnFs[c(36,37,38,39,40,41)])
 
 #Recommend trimming where quality profile crashes - in this case, forward reads mostly fine up to 300
-
 #For common ITS amplicon strategies with paired end reads, it is undesirable to truncate reads to a fixed length due to the large amount of length variation at that locus. That is OK, just leave out truncLen. Make sure you removed the forward and reverse primers from both the forward and reverse reads though! 
 
 #Make directory and filenames for the filtered fastqs
@@ -128,9 +122,11 @@ dadaFs <- dada(derepFs, err=errF, multithread=TRUE)
 #will tell how many 'real' variants in unique input seqs
 #By default, the dada function processes each sample independently, but pooled processing is available with pool=TRUE and that may give better results for low sampling depths at the cost of increased computation time. See our discussion about pooling samples for sample inference. 
 dadaFs[[1]]
+dadaFs[[25]]
 
 #construct sequence table
 seqtab <- makeSequenceTable(dadaFs)
+head(seqtab)
 
 ################################
 ##### Remove chimeras #######
@@ -142,15 +138,15 @@ seqtab <- makeSequenceTable(dadaFs)
 
 seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
 dim(seqtab.nochim)
-#Identified 1 bimeras out of 117 input sequences.
+# Identified 1 bimeras out of 117 input sequences.
 
 sum(seqtab.nochim)/sum(seqtab)
 #The fraction of chimeras varies based on factors including experimental procedures and sample complexity, 
 #Most of your reads should remain after chimera removal (it is not uncommon for a majority of sequence variants to be removed though)
 #For our sample, this ratio was 0.9998201, there was only 1 bimera
 
-write.csv(seqtab,file="~/Desktop/uptake/Alizah_seqtab.csv")
-write.csv(seqtab.nochim,file="~/Desktop/uptake/Alizah_nochim.csv")
+write.csv(seqtab,file="Alizah_seqtab.csv")
+write.csv(seqtab.nochim,file="Alizah_nochim.csv")
 ################################
 ##### Track Read Stats #######
 ################################
@@ -177,22 +173,21 @@ write.csv(track,file="ReadFilterStats_AllData_final.csv",row.names=TRUE,quote=FA
 #modified version for phyloseq looks like this instead:
 #>Symbiodinium; Clade A; A1.1
 
-taxa <- assignTaxonomy(seqtab.nochim, "~/Desktop/Pdam/GeoSymbio_ITS2_LocalDatabase_verForPhyloseq.fasta", minBoot=5,multithread=TRUE,tryRC=TRUE,outputBootstraps=TRUE)
+taxa <- assignTaxonomy(seqtab.nochim, "GeoSymbio_ITS2_LocalDatabase_verForPhyloseq.fasta", minBoot=5,multithread=TRUE,tryRC=TRUE,outputBootstraps=FALSE)
+#minboot should be higher
 #Obtain a csv file for the taxonomy so that it's easier to map the sequences for the heatmap.
-write.csv(taxa, file="Y.csv",row.name=TRUE,quote=FALSE)
+write.csv(taxa, file="taxa.csv",row.name=TRUE,quote=FALSE)
 unname(head(taxa, 30))
 unname(taxa)
-
-#Lowered bootstrap threshold from 50 to 5. Was not returning hits for many sequences. But reducing to 5 improved sequence return and identities largely match separate blastn search against the same database
 
 #Now, save outputs so can come back to the analysis stage at a later point if desired
 saveRDS(seqtab.nochim, file="final_seqtab_nochim.rds")
 saveRDS(taxa, file="final_taxa_blastCorrected.rds")
 
 #If you need to read in previously saved datafiles
-seqtab.nochim <- readRDS("~/Research/final_seqtab_nochim.rds")
-taxa <- readRDS("~/Research/final_taxa_blastCorrected.rds")
-
+seqtab.nochim <- readRDS("final_seqtab_nochim.rds")
+taxa <- readRDS("final_taxa_blastCorrected.rds")
+head(taxa)
 
 ################################
 ##### handoff 2 phyloseq #######
@@ -200,9 +195,11 @@ taxa <- readRDS("~/Research/final_taxa_blastCorrected.rds")
 
 #import dataframe holding sample information
 #have your samples in the same order as the seqtab file in the rows, variables as columns
-samdf<-read.csv("variabletablex.csv")
+samdf<-read.csv("variabletable.csv")
 head(samdf)
-rownames(samdf) <- samdf$Sam
+head(seqtab.nochim)
+head(taxa)
+rownames(samdf) <- samdf$sample
 
 # Construct phyloseq object (straightforward from dada2 outputs)
 ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
@@ -210,29 +207,26 @@ ps <- phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE),
                tax_table(taxa))
 ps
 
-
 #replace sequences with shorter names (correspondence table output below)
 ids<-taxa_names(ps)
 ids <- paste0("sq",seq(1, length(colnames(seqtab.nochim))))
 colnames(seqtab.nochim) <- ids
 
-
 #Bar-plots
-
 top90 <- names(sort(taxa_sums(ps), decreasing=TRUE))[1:90]
 ps.top90 <- transform_sample_counts(ps, function(OTU) OTU/sum(OTU))
-ps.top90 <- prune_taxa(top305, ps.top305)
+ps.top90 <- prune_taxa(top90, ps.top90)
 
 plot_bar(ps.top90, x="Sample", fill="Class") 
 
 #visusalize via counts rather than abundances:
-plot_bar(ps, x = "Sam", fill= "Class") #+ facet_wrap("tank")
+plot_bar(ps, x = "sample", fill= "Class") #+ facet_wrap("tank")
 #
 #Obtain a csv file for the phyloseq data. Will give you the abundances for each sample and class. Useful for constructing the heatmap. Also, enables you to use ggplot, and construct more aesthetically pleasing plot.
-psz <- psmelt(ps.top305)
+psz <- psmelt(ps.top90)
 write.csv(psz, file="Phyloseqoutputfinal.csv")
-p <- ggplot(psz, aes(x=Sample, y=Abundance, fill=Class)) + colorblind_pal()
-p + geom_bar(stat="identity", colour="black", aes(fill(values=c()))) #+ facet_wrap("tank")
+p <- ggplot(psz, aes(x=Sample, y=Abundance, fill=Class))
+p + geom_bar(stat="identity", colour="black")
 
 ################################
 ##### output 'OTU' table #######
